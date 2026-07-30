@@ -1159,7 +1159,7 @@ async function actualizarEmpresa(){
 
         telefono:telefono,
 
-        plan_id:plan
+        
 
     })
     .eq(
