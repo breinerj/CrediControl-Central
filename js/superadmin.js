@@ -424,8 +424,8 @@ async function cargarEmpresas(){
                     <td>
 
                         <button
-                            class="btn btn-sm btn-primary btnEditarEmpresa"
-                            data-id="${empresa.id}">
+                            class="btn btn-sm btn-primary"
+                            onclick="editarEmpresa(${empresa.id})">
 
                             Editar
 
@@ -845,19 +845,44 @@ const modalEmpresa = new bootstrap.Modal(
     document.getElementById("modalEmpresa")
 );
 
-const btnNuevaEmpresa = document.getElementById("btnNuevaEmpresa");
+const btnNuevaEmpresa =
+    document.getElementById("btnNuevaEmpresa");
 
 if (btnNuevaEmpresa) {
 
     btnNuevaEmpresa.addEventListener("click", async () => {
 
+        // Ya no estamos editando
+        empresaEditando = null;
+
+        // El botón vuelve a decir Guardar
+        document.getElementById(
+            "btnGuardarEmpresa"
+        ).textContent = "Guardar";
+
+        // Limpiar todos los campos
+        document.getElementById("empresaNombre").value = "";
+        document.getElementById("empresaNit").value = "";
+        document.getElementById("empresaCorreo").value = "";
+        document.getElementById("empresaTelefono").value = "";
+        document.getElementById("empresaPlan").value = "";
+
+        // Cargar nuevamente los planes
         await cargarPlanes();
 
+        // Mostrar el modal
         modalEmpresa.show();
 
     });
 
 }
+
+
+/*=========================================================
+    EDICION EMPRESA
+=========================================================*/
+
+let empresaEditando = null;
 
 
 /*=========================================================
@@ -910,7 +935,6 @@ async function cargarPlanes() {
         `;
 
     });
-
 }
 
 /*=========================================================
@@ -932,6 +956,12 @@ if(btnGuardarEmpresa){
 }
 
 async function guardarEmpresa(){
+
+    if(empresaEditando){
+
+        return actualizarEmpresa();
+
+}
 
     const nombre =
         document.getElementById("empresaNombre").value.trim();
@@ -1089,4 +1119,136 @@ Usuario: ${correo}
 
 Contraseña temporal: Admin12345*`
 );
+}
+
+/*=========================================================
+    ACTUALIZAR EMPRESA
+=========================================================*/
+
+async function actualizarEmpresa(){
+
+    const nombre =
+        document.getElementById("empresaNombre").value.trim();
+
+    const nit =
+        document.getElementById("empresaNit").value.trim();
+
+    const correo =
+        document.getElementById("empresaCorreo").value.trim();
+
+    const telefono =
+        document.getElementById("empresaTelefono").value.trim();
+
+    const plan =
+        Number(
+            document.getElementById("empresaPlan").value
+        );
+
+    const {
+        error
+    } =
+    await supabaseClient
+    .from("empresas")
+    .update({
+
+        nombre:nombre,
+
+        nit:nit,
+
+        correo:correo,
+
+        telefono:telefono,
+
+        plan_id:plan
+
+    })
+    .eq(
+        "id",
+        empresaEditando
+    );
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "No se pudo actualizar."
+        );
+
+        return;
+
+    }
+
+    empresaEditando=null;
+
+    document.getElementById(
+        "btnGuardarEmpresa"
+    ).textContent="Guardar";
+
+    modalEmpresa.hide();
+
+    await cargarEmpresas();
+
+    alert(
+        "Empresa actualizada correctamente."
+    );
+
+}
+
+
+/*=========================================================
+    EDITAR EMPRESA
+=========================================================*/
+
+async function editarEmpresa(id){
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .from("empresas")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if(error){
+
+        console.error(error);
+
+        alert("No se pudo cargar la empresa.");
+
+        return;
+
+    }
+
+    empresaEditando = id;
+
+    await cargarPlanes();
+
+    document.getElementById("tituloModalEmpresa").textContent =
+        "Editar Empresa";
+
+    document.getElementById("btnGuardarEmpresa").textContent =
+        "Actualizar Empresa";
+
+    document.getElementById("empresaNombre").value =
+        data.nombre || "";
+
+    document.getElementById("empresaNit").value =
+        data.nit || "";
+
+    document.getElementById("empresaCorreo").value =
+        data.correo || "";
+
+    document.getElementById("empresaTelefono").value =
+        data.telefono || "";
+
+    // Lo dejamos comentado por ahora
+    // hasta revisar cómo manejas los planes
+    // document.getElementById("empresaPlan").value =
+    //     data.plan_id || "";
+
+    modalEmpresa.show();
+
 }
