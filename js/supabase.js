@@ -21,3 +21,20 @@ const supabaseClient =
 console.log(
     "CrediControl Central conectado a Supabase"
 );
+
+supabaseClient.auth.getUser().then(({ data, error }) => {
+
+    console.log("USUARIO AUTH:", data.user);
+
+    console.log("ERROR AUTH:", error);
+
+});
+
+supabaseClient
+    .from("empresas")
+    .select("id,nombre")
+    .then(resultado => {
+
+        console.log("PRUEBA DIRECTA:", resultado);
+
+    });

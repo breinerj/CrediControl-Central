@@ -41,8 +41,42 @@ Deno.serve(async (req) => {
       });
 
     if (error) {
-      throw error;
-    }
+
+  /*
+      Si el usuario ya existe,
+      no devolvemos error fatal.
+  */
+
+  if (
+      error.message &&
+      error.message.includes(
+          "already been registered"
+      )
+  ) {
+
+      return new Response(
+          JSON.stringify({
+
+              ok: false,
+
+              usuario_existente: true,
+
+              error: error.message
+
+          }),
+          {
+              headers: {
+                  ...corsHeaders,
+                  "Content-Type": "application/json"
+              }
+          }
+      );
+
+  }
+
+  throw error;
+
+}
 
     return new Response(
       JSON.stringify({

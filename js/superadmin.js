@@ -308,25 +308,33 @@ async function cargarEmpresas(){
 
 
     const {
+        data: usuarioAuth
+    } =
+    await supabaseClient.auth.getUser();
+
+    console.log(
+        "USUARIO AUTH:",
+        usuarioAuth.user
+    );
+
+    const {
         data,
-        error
+        error,
+        status
     } =
     await supabaseClient
         .from("empresas")
-        .select(`
-            *,
-            licencias(
-                fecha_fin,
-                estado,
-                planes(nombre)
-            )
-        `)
+        .select("*")
         .order(
             "id",
             {
                 ascending: true
             }
         );
+    console.log("STATUS:", status);
+    console.log("ERROR:", error);
+    console.log("EMPRESAS:", data);    
+        
 
 
     if(error){
@@ -339,6 +347,9 @@ async function cargarEmpresas(){
         return;
 
     }
+
+    console.log("EMPRESAS RECIBIDAS:", data);
+    console.log("TOTAL:", data?.length);
 
 
     tabla.innerHTML = "";
